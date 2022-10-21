@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<!-- Courtney St. George - 200917250
+    Controls of program are on the interface to the right of the canvas
+
+    This program builds on the functionality of the previous assignment and in addition to previous features also 
+    adds light source functionality including fixed lights with sources controlled by slider, a moving point source,
+    a spotlight, and three lights around the camera that show different colors when active. Different shading techniques
+    such as flat, gouraud and phong are also shown. Materials were assigned to each object and geometry was used to 
+    show placement of visible light sources.
+    Previous functionality includes:
+    Different translations including rotation, translation, and scaling 
+    and shows different viewing options between orthographic and perspective while also making use
+    of camera movement to view scene
+
+    Everything was completed using WebGL, three.js was not used-->
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <link rel="stylesheet" href="transformations.css">
+    </head>
+
+    <body>
+        <script id="vertex-shader" type="x-shader/x-vertex">
+            #version 300 es
+            
+            in  vec4 aPosition;
+            in  vec4 aNormal;
+            out vec4 vColor;
+
+            uniform vec4 uAmbientProduct1, uDiffuseProduct1, uSpecularProduct1;
+            uniform vec4 uAmbientProduct2, uDiffuseProduct2, uSpecularProduct2;
+            uniform vec4 uAmbientProduct3, uDiffuseProduct3, uSpecularProduct3;
+            uniform vec4 uAmbientProduct5, uDiffuseProduct5, uSpecularProduct5;
+            uniform vec4 uAmbientProduct6, uDiffuseProduct6, uSpecularProduct6;
+            uniform vec4 uAmbientProduct7, uDiffuseProduct7, uSpecularProduct7;
+            uniform mat4 uModelViewMatrix;
+            uniform mat4 uProjectionMatrix;
+            uniform vec4 uLightPosition1, uLightPosition2, uLightPosition3, uLightPosition4, uLightPosition5, uLightPosition6, uLightPosition7;
+            uniform float uShininess1, uShininess2, uShininess3, uShininess5, uShininess6, uShininess7;
+
+            out vec4 uAmbient1, uDiffuse1, uSpecular1;
+            out vec4 uAmbient2, uDiffuse2, uSpecular2;
+            out vec4 uAmbient3, uDiffuse3, uSpecular3;
+            out vec4 uAmbient5, uDiffuse5, uSpecular5;
+            out vec4 uAmbient6, uDiffuse6, uSpecular6;
+            out vec4 uAmbient7, uDiffuse7, uSpecular7;
+
+            out float uShine1, uShine2, uShine3, uShine5, uShine6, uShine7;
+
+            out float fragFlag;
+            out vec3 l, spotl;
+            out vec3 e, spote;
+            out vec3 norm, spotnorm;
+            
+            float perLightPhong(vec4 uLightPosition)
+            {
+                vec3 pos = (uModelViewMatrix * aPosition).xyz;
+
+                if(uLightPosition.w == 0.0) l = uLightPosition.xyz;
+                else l = uLightPosition.xyz - pos;
+
+                e = -(pos);
+                norm = (uModelViewMatrix * aNormal).xyz;
+
+                return 1.0;
+            }
+
+            float spotLightV(vec4 uLightPosition)
+            {
+                vec3 pos = (uModelViewMatrix * aPosition).xyz;
+
+                if(uLightPosition.w == 0.0) spotl = uLightPosition.xyz;
+                else spotl = uLightPosition.xyz - pos;
+
+                spote = -(pos);
+                spotnorm = (uModelViewMatrix * aNormal).xyz;
+
+                return 1.0;
+            }
+
+            vec4 perLightVertex(vec4 uAmbientProduct, vec4 uDiffuseProduct, vec4 uSpecularProduct, vec4 uLightPosition, float uShininess)
+            {
+                
+                vec3 pos = (uModelViewMatrix * aPosition).xyz;
+                //fixed light postion
+
+                vec3 L;
+
+                if(uLightPosition.w == 0.0) L = normalize(uLightPosition.xyz);
+                else L = normalize(uLightPosition.xyz - pos);
+            
+                vec3 E = -normalize(pos);
+                vec3 H = normalize(L + E);
+            
+                // Transform vertex normal into eye coordinates
+            
+                vec3 N = normalize((uModelViewMatrix*aNormal).xyz);
+            
+                // Compute terms in the illumination equation
+                vec4 ambient = uAmbientProduct;
+            
+                float Kd = max(dot(L, N), 0.0);
+                vec4  diffuse = Kd*uDiffuseProduct;
+            
+                float Ks = pow( max(dot(N, H), 0.0), uShininess );
+                vec4  specular = Ks * uSpecularProduct;
+            
+                if( dot(L, N) < 0.0 ) {
+                  specular = vec4(0.0, 0.0, 0.0, 1.0);
+                }
+
+                return (ambient + specular + diffuse);
+            }
+
+            void main()
+            {
+                uAmbient1 = uAmbientProduct1;
+                uAmbient2 = uAmbientProduct2;
+                uAmbient3 = uAmbientProduct3;
+                uAmbient5 = uAmbientProduct5;
+                uAmbient6 = uAmbientProduct6;
+                uAmbient7 = uAmbientProduct7;
+
+                uDiffuse1 = uDiffuseProduct1;
+                uDiffuse2 = uDiffuseProduct2;
+                uDiffuse3 = uDiffuseProduct3;
+                uDiffuse5 = uDiffuseProduct5;
+                uDiffuse6 = uDiffuseProduct6;
+                uDiffuse7 = uDiffuseProduct7;
+
+                uSpecular1 = uSpecularProduct1;
+                uSpecular2 = uSpecularProduct2;
+                uSpecular3 = uSpecularProduct3;
+                uSpecular5 = uSpecularProduct5;
+                uSpecular6 = uSpecularProduct6;
+                uSpecular7 = uSpecularProduct7;
+
+                uShine1 = uShininess1;
+                uShine2 = uShininess2;
+                uShine3 = uShininess3;
+                uShine5 = uShininess5;
+                uShine6 = uShininess6;
+                uShine7 = uShininess7;
+
+                if(fragFlag == 1.0)
+                {
+                    perLightPhong(uLightPosition1);
+                    perLightPhong(uLightPosition2);
+                    perLightPhong(uLightPosition3);
+                    perLightPhong(uLightPosition5);
+                    perLightPhong(uLightPosition6);
+                    perLightPhong(uLightPosition7);
+                }
+                if(fragFlag == 0.0)
+                {
+                    
+
+                    vec4 color1 = perLightVertex(uAmbientProduct1, uDiffuseProduct1, uSpecularProduct1, uLightPosition1, uShininess1);
+                    vec4 color2 = perLightVertex(uAmbientProduct2, uDiffuseProduct2, uSpecularProduct2, uLightPosition2, uShininess2);
+                    vec4 color3 = perLightVertex(uAmbientProduct3, uDiffuseProduct3, uSpecularProduct3, uLightPosition3, uShininess3);
+                    vec4 color4 = perLightVertex(uAmbientProduct5, uDiffuseProduct5, uSpecularProduct5, uLightPosition5, uShininess5);
+                    vec4 color5 = perLightVertex(uAmbientProduct6, uDiffuseProduct6, uSpecularProduct6, uLightPosition6, uShininess6);
+                    vec4 color6 = perLightVertex(uAmbientProduct7, uDiffuseProduct7, uSpecularProduct7, uLightPosition7, uShininess7);
+                    spotLightV(uLightPosition4);
+
+                    vColor = color1 + color2 + color3 + color4 + color5 + color6;
+                    vColor.a = 1.0;
+                    
+                }
+
+                gl_Position = uProjectionMatrix * uModelViewMatrix *aPosition;
+                
+            }
+        </script>
+        
+        <script id="fragment-shader" type="x-shader/x-fragment">
+            #version 300 es
+            
+            precision mediump float;
+
+            in float fragFlag;
+            out vec4 fColor;
+            in vec4 vColor;
+
+            in vec4 uAmbient1, uDiffuse1, uSpecular1;
+            in vec4 uAmbient2, uDiffuse2, uSpecular2;
+            in vec4 uAmbient3, uDiffuse3, uSpecular3;
+            in vec4 uAmbient5, uDiffuse5, uSpecular5;
+            in vec4 uAmbient6, uDiffuse6, uSpecular6;
+            in vec4 uAmbient7, uDiffuse7, uSpecular7;
+            uniform vec4 uAmbientProduct4, uDiffuseProduct4, uSpecularProduct4;
+            uniform float uShininess4;
+
+            in float uShine1, uShine2, uShine3, uShine5, uShine6, uShine7;
+
+            in vec3 l, spotl;
+            in vec3 e, spote;
+            in vec3 norm, spotnorm;
+            uniform float uLimit;
+            uniform vec3 uLightDirection;
+
+            vec4 spotLight(vec4 uAmbientProduct, vec4 uDiffuseProduct, vec4 uSpecularProduct, float uShininess, vec3 uLightDirection)
+            {
+                vec4 ambient = vec4(0.0, 0.0, 0.0, 1.0);
+                vec4 diffuse = vec4(0.0, 0.0, 0.0, 1.0);
+                vec4 specular = vec4(0.0, 0.0, 0.0, 1.0);
+                float light = 0.0;
+
+                
+                vec3 L = normalize(spotl);
+                vec3 E = normalize(spote);
+                
+                vec3 D = normalize(-uLightDirection);
+                vec3 lD = normalize(uLightDirection);
+
+                float dotFromDirection = dot(L, D);
+                
+                if(dot(L, D) > uLimit)
+                {   
+                    vec3 normal = normalize(spotnorm);
+                    float Kd = max(dot(normal, L), 0.0);
+                    if(Kd > 0.0)
+                    {
+                        vec3 H = normalize(L + E);
+                        float Ks = pow( max(dot(H, normal), 0.0), uShininess );
+                        specular = Ks * uSpecularProduct;
+                        ambient = uAmbientProduct;
+                        diffuse = Kd*uDiffuseProduct;
+                        
+                    }
+                    
+                } 
+                vec4 color = max(diffuse + specular , ambient);
+                return color;
+            }
+
+            vec4 perLightPhong2(vec4 uAmbient, vec4 uDiffuse, vec4 uSpecular, float uShine)
+            {
+                vec3 light = normalize(l);
+                vec3 normal = normalize(norm);
+                vec3 H = normalize(light + e);
+            
+                // Compute terms in the illumination equation
+                vec4 ambient = uAmbient;
+            
+                float Kd = max(dot(light, normal), 0.0);
+                vec4  diffuse = Kd*uDiffuse;
+            
+                float Ks = pow( max(dot(normal, H), 0.0), uShine );
+                vec4  specular = Ks * uSpecular;
+            
+                if( dot(light, normal) < 0.0 ) {
+                  specular = vec4(0.0, 0.0, 0.0, 1.0);
+                }
+
+                return (ambient + specular + diffuse);
+            }
+            
+            void
+            main()
+            {
+                if(fragFlag == 1.0)
+                {
+                    vec4 color1 = perLightPhong2(uAmbient1, uDiffuse1, uSpecular1, uShine1);
+                    vec4 color2 = perLightPhong2(uAmbient2, uDiffuse2, uSpecular2, uShine2);
+                    vec4 color3 = perLightPhong2(uAmbient3, uDiffuse3, uSpecular3, uShine3);
+                    vec4 color5 = perLightPhong2(uAmbient5, uDiffuse5, uSpecular5, uShine5);
+                    vec4 color6 = perLightPhong2(uAmbient6, uDiffuse6, uSpecular6, uShine6);
+                    vec4 color7 = perLightPhong2(uAmbient7, uDiffuse7, uSpecular7, uShine7);
+                    fColor = color1 + color2, + color3 + color5 + color6 + color7;
+                    fColor.a = 1.0;
+                }
+                if(fragFlag == 0.0)
+                {
+                    vec4 color = spotLight(uAmbientProduct4, uDiffuseProduct4, uSpecularProduct4, uShininess4, uLightDirection);
+                    fColor = vColor + color;
+                    fColor.a = 1.0;
+                }
+                
+            }
+        </script>
+
+        <script type="text/javascript" src="Common/initShaders.js"></script>
+        <script type="text/javascript" src="Common/MVnew.js"></script>
+        <script type="text/javascript" src="vertices.js"></script>
+        <script type="text/javascript" src="objects.js"></script>
+        <script type="text/javascript" src="shared.js"></script>
+        <script type="text/javascript" src="drawFunctions.js"></script>
+        <script type="text/javascript" src="transformations.js"></script>
+        
+
+        <div id='canvas-container'>
+            <canvas id="gl-canvas" width="700" height="700">
+                Oops ... your browser doesn't support the HTML5 canvas element
+            </canvas>
+        </div>
+        <div id='container'>
+            <div id="slider-container">
+                <div id="text">Ambience:</div>
+                <input id = "am-select" type="range" value="0.5" min="0.0" max="1.0" step= "0.01" oninput="this.nextElementSibling.value = this.value">
+                <output id= "am-value">0.5</output>
+            </div>
+            <div id=description>Light Source Toggle Buttons:</div>
+            <div id = "buttons-container">
+                <div id="fixed1-container">
+                    <button id="fixed-1" onclick="ToggleLight(0)" oninput="this.nextElementSibling.value = this.value">Fixed Ambient (Z Key)</button>
+                    <output id='fixed-1-output'>On</output>
+                </div>
+                <div id="fixed2-container">
+                    <button id="fixed-2" onclick="ToggleLight(1)" oninput="this.nextElementSibling.value = this.value">Fixed Ambient Right (X Key)</button>
+                    <output id='fixed-2-output'>On</output>
+                </div>
+                <div id="moving-container">
+                    <button id="moving" onclick="ToggleLight(2)" oninput="this.nextElementSibling.value = this.value">Moving Point Source (C Key)</button>
+                    <output id='moving-output'>On</output>
+                </div>
+                <div id="headlamp-container">
+                    <button id="headlamp" onclick="ToggleLight(3)" oninput="this.nextElementSibling.value = this.value">Headlamp (V Key + Mouse Click)</button>
+                    <output id='headlamp-output'>Off</output>
+                </div>
+            </div>
+            <div id = "buttons-container2">
+                <div id="top-container">
+                    <button id="top" onclick="ToggleLight(6)" oninput="this.nextElementSibling.value = this.value">Top Camera Source(Blue, T Key)</button>
+                    <output id='top-output'>Off</output>
+                </div>
+                <div id="right-container">
+                    <button id="left" onclick="ToggleLight(4)" oninput="this.nextElementSibling.value = this.value">Left Camera Source(Red, L Key)</button>
+                    <output id='left-output'>Off</output>
+                </div>
+                <div id="left-container">
+                    <button id="right" onclick="ToggleLight(5)" oninput="this.nextElementSibling.value = this.value">Right Camera Course(Green R Key)</button>
+                    <output id='right-output'>Off</output>
+                </div>
+            </div>
+            <div id="paragraph-container">
+                <div id="paragraph1">
+                    Other Controls:
+                </div>
+                <div id="paragraph2">
+                    W Key to Move Forward -- S Key to Move Backward -- A Key To Rotate Left
+                </div>
+                <div id="paragraph3">
+                    D Key To Rotate Right -- E Key To Pan Up -- Q Key To Pan Down
+                </div>   
+                <div id="paragraph4">
+                    1 Key Tent Rotation -- 2 Key Rock Translation -- 3 Key Fence Scaling
+                </div>
+                <div id="paragraph5">
+                    4 Key Log Scaling -- 5 Key Tree Movement -- O Key Orthographic
+                </div>
+                <div id="paragraph6">
+                    P Key Perspective -- F Key Flat Shading -- G Key Gouraud Shading
+                </div>
+                <div id="paragraph7">
+                    H Key Phong Shading 
+                </div>
+            </div>
+        </div>
+        
+    </body>
+
+    <!--The following keys are controls for the program
+        W = Move Forward
+        S = Move Backward
+        A = Rotate Left
+        D = Rotate Right
+        E = Pan Up
+        Q = Pan Down
+        1: Start and stop rotation (tent)
+        2: Start and stop translation (rock)
+        3: Start and stop uniform scaling scaling (fence)
+        4: Start and stop non-uniform scaling (log)
+        5: Start and stop back and forth movement (tree)
+        o: switch view to orthographic
+        p: switch view to perspective-->
+</html>

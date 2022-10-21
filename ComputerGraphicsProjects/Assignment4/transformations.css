@@ -1,0 +1,85 @@
+#container{
+    width:700px;
+    position: fixed;
+    top: 50px;
+    left: 750px;
+    
+}
+#canvas-container{
+    width: 700px;
+}
+#buttons-container, #buttons-container2{
+    display: flex;
+    justify-content: center;
+}
+#paragraph-container{
+    display:block;
+    width: 700px;
+    justify-content: center;
+}
+
+#fixed1-container, #fixed2-container,#moving-container, #headlamp-container, 
+#top-container, #right-container, #left-container
+{
+    padding: 10px;
+}
+
+#fixed-1, #fixed-2, #moving, #headlamp, #top, #right, #left{
+    border: 2px solid black;
+    border-radius: 7px;
+    padding: 6px;
+    color: black;
+    background-color:antiquewhite;
+    font-size: 16px;
+    font-weight: bold;
+}
+#slider-container{
+    display: flex;
+    padding: 10px;
+    justify-content: center;
+    
+}
+#am-select{
+    -webkit-appearance: none;
+    width: 200px;
+    height: 15px;
+    border-radius: 10px;
+    background: antiquewhite;
+    outline: 3px solid black;
+}
+
+#am-select::-webkit-slider-thumb
+{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: black;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#am-select, #am-value, #text{
+    display: inline;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+#am-value, #text{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#am-value{
+    width:10px;
+}
+#description, #paragraph1, #paragraph2, #paragraph3, #paragraph4, #paragraph5, #paragraph6, #paragraph7,
+#fixed-1-output, #fixed-2-output, #moving-output, #headlamp-output, #top-output, #left-output, #right-output{
+    display: flex;
+    padding: 10px;  
+    font-size: 17px;
+    font-weight: bold;
+    justify-content: center;
+}
+
+

@@ -1,0 +1,184 @@
+#canvas-container{
+    position: relative;
+    top: 0px;
+    left: 0px;
+    z-index: 3;
+}
+
+#text{
+    font-size: 25px;
+    font-family: 'VT323', monospace;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
+}
+
+#score-container{
+    width: 700px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
+}
+
+#lives-container{
+    width: 696px;
+    position: absolute;
+    top: 650px;
+    left: 10px;
+    z-index: 1;
+}
+
+#level-container{
+    width: 696px;
+    position: absolute;
+    top: 670px;
+    left: 10px;
+    z-index: 1;
+}
+#score{
+    font-size: 25px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    font-family: 'VT323', monospace;
+    z-index: 1;
+}
+#lives{
+    font-size: 25px;
+    color: white;
+    display: inline;
+    justify-content: left;
+    font-family: 'VT323', monospace;
+    z-index: 1;
+}
+
+#level{
+    font-size: 25px;
+    color: white;
+    display: inline;
+    justify-content: right;
+    font-family: 'VT323', monospace;
+    z-index: 1;
+}
+
+#lives-output{
+    font-size: 25px;
+    color: white;
+    display: inline;
+    justify-content: left;
+    padding-left: 3px;
+    font-family: 'VT323', monospace;
+    z-index: 1;
+}
+#score-output{
+    font-size: 25px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    font-family: 'VT323', monospace;
+    z-index: 1;
+}
+
+#level-output{
+    font-size: 25px;
+    color: white;
+    display: inline;
+    justify-content: left;
+    font-family: 'VT323', monospace;
+    z-index: 1;
+}
+
+#menu-container{
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    top: 145px;
+    left: 145px;
+    border: 5px solid #fdbcb4;
+    background-color: black;
+    z-index: 1;
+}
+
+#start{
+    position: absolute;
+    background-color: black;
+    font-family: 'VT323', monospace;
+    color: #fdbcb4;
+    font-size: 20px;
+    width: 120px;
+    height: 40px;
+    top: 40px;
+    left: 140px;
+    border: 5px solid #fdbcb4;
+}
+
+#orth{
+    position: absolute;
+    font-family: 'VT323', monospace;
+    background-color: black;
+    color: #fdbcb4;
+    font-size: 20px;
+    width: 120px;
+    height: 40px;
+    top: 220px;
+    left: 140px;
+    border: 5px solid #fdbcb4;
+}
+
+#pers{
+    position: absolute;
+    font-family: 'VT323', monospace;
+    background-color: black;
+    color: #fdbcb4;
+    font-size: 20px;
+    width: 120px;
+    height: 40px;
+    top: 140px;
+    left: 140px;
+    border: 5px solid #fdbcb4;
+}
+
+#spot{
+    position: absolute;
+    font-family: 'VT323', monospace;
+    background-color: black;
+    color: #fdbcb4;
+    font-size: 20px;
+    width: 120px;
+    height: 40px;
+    top: 300px;
+    left: 140px;
+    border: 5px solid #fdbcb4;
+}
+
+#score:hover, #score-output:hover, #lives:hover, #lives-output:hover{
+    cursor: default;
+}
+
+#atten-left-slider, #atten-right-slider{
+    -webkit-appearance: none;
+    width: 200px;
+    height: 15px;
+    border-radius: 10px;
+    background: antiquewhite;
+    outline: 3px solid black;
+}
+
+#atten-left-slider::-webkit-slider-thumb, #atten-right-slider::-webkit-slider-thumb
+{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: black;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#atten-left-slider, #atten-right-slider, #atten-left-output, #atten-right-output{
+    display: inline;
+    font-size: 17px;
+    font-weight: bold;
+}

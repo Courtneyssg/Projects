@@ -1,0 +1,204 @@
+<!--
+    Courtney St. George 200917250
+    This program is a 3D remake of the 2D retro Game pacman. It includes use of textures, materials,
+    and interactive light sources. The ghosts use path-finding AI, levels are infinite, and you can
+    play in different modes "Perspective", "Orthographic", and "Spotlight" that show different
+    camera views, and light sources.
+
+    This file contains HTML code for game elements such as score, level, lives and links to texture images
+     as well as sliders to adjust attenuation for the light sources in perspective and orthographic mode.
+    It also includes the shader code with uses Gouraud and flat shading.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+        <link rel="stylesheet" href="pacman.css"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <script id="vertex-shader" type="x-shader/x-vertex">
+            #version 300 es
+
+            uniform mat4 uModelViewMatrix;
+            uniform mat4 uProjectionMatrix;
+
+            uniform vec4 uAmbientLeft, uDiffuseLeft, uSpecularLeft;
+            uniform vec4 uAmbientRight, uDiffuseRight, uSpecularRight;
+
+            uniform float uAttenuationLeft, uAttenuationRight;
+            uniform vec4 uLeftPosition, uRightPosition;
+
+            in  vec4 aPosition;
+            in vec4 aNormal;
+            out vec4 vColor;
+
+            in vec2 aTexCoord;
+            out vec2 vTexCoord;
+
+            uniform vec4 uSpotPosition;
+
+            out vec3 spotl, spote, spotnorm;
+
+            vec4 Lighting(vec4 uAmbient, vec4 uDiffuse, vec4 uSpecular, vec4 uLightPos, float attenuation)
+            {
+                vec3 pos = (uModelViewMatrix * aPosition).xyz;
+                vec4 obColor = vec4(1.0, 1.0, 1.0, 1.0);
+                vec3 norm = normalize(aNormal).xyz;
+                vec3 lightDir = normalize(uLightPos.xyz - pos);
+                vec3 E = -normalize(pos);
+                vec3 H = normalize(lightDir + E);
+
+                float d = length(lightDir);
+                float A = clamp( attenuation / d, 0.0, 1.0);
+
+                float diff = max(dot(norm, lightDir), 0.0);
+                vec4  diffuse = diff*uDiffuse;
+
+                vec4 ambient = uAmbient; 
+
+                float Ks = pow( max(dot(norm, H), 0.0), 50.0);
+                vec4  specular = Ks * uSpecular;
+
+                vec4 result = ((ambient + diffuse + specular) * obColor) * A;
+
+                return result;
+
+            }
+
+            float spotLightV(vec4 uLightPosition)
+            {
+                vec3 pos = (uModelViewMatrix * aPosition).xyz;
+
+                if(uLightPosition.w == 0.0) spotl = uLightPosition.xyz;
+                else spotl = uLightPosition.xyz - pos;
+
+                spote = -(pos);
+                spotnorm = (uModelViewMatrix * aNormal).xyz;
+
+                return 1.0;
+            }
+
+            void main()
+            {
+                vTexCoord = aTexCoord;
+
+                vec4 color1 = Lighting(uAmbientLeft, uDiffuseLeft, uSpecularLeft ,uLeftPosition, uAttenuationLeft);
+                vec4 color2 = Lighting(uAmbientRight, uDiffuseRight, uSpecularRight ,uRightPosition, uAttenuationRight);
+
+                spotLightV(uSpotPosition);
+                gl_Position = uProjectionMatrix*uModelViewMatrix*aPosition;
+                vColor = color1 + color2;
+                vColor.a = 1.0;
+            }
+        </script>
+        <script id="fragment-shader" type="x-shader/x-fragment">
+            #version 300 es
+            
+            precision mediump float;
+
+            uniform vec4 uAmbientSpot, uDiffuseSpot, uSpecularSpot;
+            uniform float uShininessSpot;
+            uniform float uLimit;
+            uniform vec3 uLightDirection;
+
+            in vec3 spotl, spote, spotnorm;
+            
+            in vec4 vColor;
+            out vec4 fColor;
+
+            in vec2 vTexCoord;
+            uniform sampler2D uSampler;
+
+            vec4 spotLight(vec4 uAmbientProduct, vec4 uDiffuseProduct, vec4 uSpecularProduct, float uShininess)
+            {
+                vec4 ambient = vec4(0.0, 0.0, 0.0, 1.0);
+                vec4 diffuse = vec4(0.0, 0.0, 0.0, 1.0);
+                vec4 specular = vec4(0.0, 0.0, 0.0, 1.0);
+                float light = 0.0;
+
+                
+                vec3 L = normalize(spotl);
+                vec3 E = normalize(spote);
+                
+                vec3 D = normalize(-uLightDirection);
+                vec3 lD = normalize(uLightDirection);
+
+                float dotFromDirection = dot(L, D);
+                
+                if(dot(L, D) > uLimit)
+                {   
+                    vec3 normal = normalize(spotnorm);
+                    float Kd = max(dot(normal, L), 0.0);
+                    if(Kd > 0.0)
+                    {
+                        vec3 H = normalize(L + E);
+                        float Ks = pow( max(dot(H, normal), 0.0), uShininess );
+                        specular = Ks * uSpecularProduct;
+                        ambient = uAmbientProduct;
+                        diffuse = Kd*uDiffuseProduct;
+                        
+                    }
+                    
+                } 
+                vec4 color = max(diffuse + specular , ambient);
+                return color;
+            }
+            
+            void
+            main()
+            {
+                vec4 color = spotLight(uAmbientSpot, uDiffuseSpot, uSpecularSpot, uShininessSpot);
+                fColor = (vColor + color) * texture( uSampler ,vTexCoord);
+                fColor.a = 1.0;
+            }
+        </script>
+        <script type="text/javascript" src="Common/initShaders.js"></script>
+        <script type="text/javascript" src="Common/MVnew.js"></script>
+        <script type="text/javascript" src="gridInput.js"></script>
+        <script type="text/javascript" src="vertices.js"></script>
+        <script type="text/javascript" src="classes.js"></script>
+        <script type="text/javascript" src="objects.js"></script>
+        <script type="text/javascript" src="gridconfig.js"></script>
+        <script type="text/javascript" src="shared.js"></script>
+        <script type="text/javascript" src="actorMovement.js"></script>
+        <script type="text/javascript" src="pacman.js"></script>
+
+        <img id="pacimage" src="assets/dirt.png" hidden>
+        <img id="wallimage" src="assets/grass2.png" hidden>     
+        <div id='canvas-container'>
+            <canvas id="gl-canvas" width="700" height="700">
+                Oops ... your browser doesn't support the HTML5 canvas element
+            </canvas>
+            <div id="text"></div>
+            <div id='score-container'>
+                <div id="score">Score</div>
+                <div id="score-output"></div>
+            </div>
+            <div id='lives-container'>
+                <div id="lives">Lives:</div>
+                <div id="lives-output"></div>
+            </div>
+            <div id='level-container'>
+                <div id="level">Level:</div>
+                <div id="level-output"></div>
+            </div>
+            <div id='menu-container'>
+                <div id='menu-frame'></div>
+                <button id='start'>Start</button>
+                <button id='orth'>Orthographic</button>
+                <button id='pers'>Perspective</button>
+                <button id='spot'>Spotlight</button>
+                </div>
+            </div>
+            
+        </div>
+
+        <input id = "atten-left-slider" type="range" value="1.0" min="0.0" max="2.0" step= "0.01" oninput="this.nextElementSibling.value = this.value">
+        <output id= "atten-left-output">1.0</output>
+        <input id = "atten-right-slider" type="range" value="1.0" min="0.0" max="2.0" step= "0.01" oninput="this.nextElementSibling.value = this.value">
+        <output id= "atten-right-output">1.0</output>
+    </body>
+</html>
